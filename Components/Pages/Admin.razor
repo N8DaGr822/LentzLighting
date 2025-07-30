@@ -1,0 +1,439 @@
+@page "/admin"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Admin Dashboard - Lentz Lighting</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex, nofollow" />
+</HeadContent>
+
+@if (!isAuthenticated)
+{
+    <div class="loading-container">
+        <div class="loading-spinner">⏳</div>
+        <p>Checking authentication...</p>
+    </div>
+}
+else
+{
+    <div class="admin-hero">
+        <div class="container">
+            <div class="admin-header">
+                <div>
+                    <h1 class="admin-title">Admin Dashboard</h1>
+                    <p class="admin-subtitle">Manage your Christmas lighting business</p>
+                </div>
+                <div class="admin-actions">
+                    <button class="btn btn-outline" @onclick="HandleLogout">
+                        🚪 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-section">
+        <div class="container">
+            <div class="admin-content">
+                <div class="admin-sidebar">
+                    <nav class="admin-nav">
+                        <button class="nav-tab @(activeTab == "overview" ? "active" : "")" @onclick="SetOverviewTab">
+                            📊 Overview
+                        </button>
+                        <button class="nav-tab @(activeTab == "bookings" ? "active" : "")" @onclick="SetBookingsTab">
+                            📅 Bookings
+                        </button>
+                        <button class="nav-tab @(activeTab == "quotes" ? "active" : "")" @onclick="SetQuotesTab">
+                            💰 Quotes
+                        </button>
+                        <button class="nav-tab @(activeTab == "map" ? "active" : "")" @onclick="SetMapTab">
+                            🗺️ Map
+                        </button>
+                        <button class="nav-tab @(activeTab == "analytics" ? "active" : "")" @onclick="SetAnalyticsTab">
+                            📈 Analytics
+                        </button>
+                        <button class="nav-tab @(activeTab == "content" ? "active" : "")" @onclick="SetContentTab">
+                            📝 Content
+                        </button>
+                    </nav>
+                </div>
+                
+                <div class="admin-main">
+                    @if (activeTab == "overview")
+                    {
+                        <div class="overview-tab">
+                            <div class="stats-grid">
+                                <div class="stat-card">
+                                    <div class="stat-icon">📅</div>
+                                    <div class="stat-content">
+                                        <h3>@totalBookings</h3>
+                                        <p>Total Bookings</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">💰</div>
+                                    <div class="stat-content">
+                                        <h3>$@totalRevenue</h3>
+                                        <p>Total Revenue</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">📊</div>
+                                    <div class="stat-content">
+                                        <h3>@pendingQuotes</h3>
+                                        <p>Pending Quotes</p>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon">⭐</div>
+                                    <div class="stat-content">
+                                        <h3>@averageRating</h3>
+                                        <p>Average Rating</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="recent-activity">
+                                <h3>Recent Activity</h3>
+                                <div class="activity-list">
+                                    @foreach (var activity in recentActivities)
+                                    {
+                                        <div class="activity-item">
+                                            <div class="activity-icon">@activity.Icon</div>
+                                            <div class="activity-content">
+                                                <p>@activity.Description</p>
+                                                <span class="activity-time">@activity.TimeAgo</span>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (activeTab == "bookings")
+                    {
+                        <div class="bookings-tab">
+                            <div class="tab-header">
+                                <h3>Recent Bookings</h3>
+                                <button class="btn btn-primary">Export</button>
+                            </div>
+                            <div class="bookings-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Customer</th>
+                                            <th>Service</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var booking in recentBookings)
+                                        {
+                                            <tr>
+                                                <td>@booking.CustomerName</td>
+                                                <td>@booking.Service</td>
+                                                <td>@booking.Date.ToString("MMM dd, yyyy")</td>
+                                                <td><span class="status @booking.Status">@booking.Status</span></td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline">View</button>
+                                                    <button class="btn btn-sm btn-primary">Edit</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (activeTab == "quotes")
+                    {
+                        <div class="quotes-tab">
+                            <div class="tab-header">
+                                <h3>Quote Requests</h3>
+                                <button class="btn btn-primary">Export</button>
+                            </div>
+                            <div class="quotes-table">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Customer</th>
+                                            <th>Package</th>
+                                            <th>Total</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var quote in recentQuotes)
+                                        {
+                                            <tr>
+                                                <td>@quote.CustomerName</td>
+                                                <td>@quote.Package</td>
+                                                <td>$@quote.Total</td>
+                                                <td>@quote.Date.ToString("MMM dd, yyyy")</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline">View</button>
+                                                    <button class="btn btn-sm btn-primary">Contact</button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (activeTab == "map")
+                    {
+                        <div class="map-tab">
+                            <div class="tab-header">
+                                <h3>Service Area Map</h3>
+                                <div class="map-actions">
+                                    <button class="btn btn-outline" @onclick="OpenMapPage">🗺️ Full Map</button>
+                                    <button class="btn btn-primary">📍 Add Location</button>
+                                </div>
+                            </div>
+                            
+                            <div class="map-preview">
+                                <div class="map-stats-grid">
+                                    <div class="stat-card">
+                                        <div class="stat-icon">📍</div>
+                                        <div class="stat-content">
+                                            <h3>24</h3>
+                                            <p>Total Locations</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">✅</div>
+                                        <div class="stat-content">
+                                            <h3>18</h3>
+                                            <p>Completed</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">⏳</div>
+                                        <div class="stat-content">
+                                            <h3>6</h3>
+                                            <p>Pending</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">💰</div>
+                                        <div class="stat-content">
+                                            <h3>$28,450</h3>
+                                            <p>Total Value</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="map-placeholder">
+                                    <div class="map-icon">🗺️</div>
+                                    <h4>Interactive Service Area Map</h4>
+                                    <p>View all your installations, customers, and service areas on an interactive map.</p>
+                                    <button class="btn btn-primary btn-lg" @onclick="OpenMapPage">
+                                        Open Full Map
+                                    </button>
+                                </div>
+                                
+                                <div class="recent-locations">
+                                    <h4>Recent Locations</h4>
+                                    <div class="location-list">
+                                        @foreach (var location in recentLocations)
+                                        {
+                                            <div class="location-item">
+                                                <div class="location-icon">📍</div>
+                                                <div class="location-info">
+                                                    <h5>@location.Name</h5>
+                                                    <p>@location.Address</p>
+                                                    <span class="status @location.Status">@location.Status</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (activeTab == "analytics")
+                    {
+                        <div class="analytics-tab">
+                            <div class="analytics-grid">
+                                <div class="chart-card">
+                                    <h3>Page Views</h3>
+                                    <div class="chart-placeholder">
+                                        📊 Chart would be displayed here
+                                    </div>
+                                </div>
+                                <div class="chart-card">
+                                    <h3>Conversion Rate</h3>
+                                    <div class="chart-placeholder">
+                                        📈 Chart would be displayed here
+                                    </div>
+                                </div>
+                                <div class="chart-card">
+                                    <h3>Popular Services</h3>
+                                    <div class="chart-placeholder">
+                                        🎯 Chart would be displayed here
+                                    </div>
+                                </div>
+                                <div class="chart-card">
+                                    <h3>Revenue Trends</h3>
+                                    <div class="chart-placeholder">
+                                        💰 Chart would be displayed here
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    @if (activeTab == "content")
+                    {
+                        <div class="content-tab">
+                            <h3>Content Management</h3>
+                            <p>Content management features coming soon...</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isAuthenticated = false;
+    private string activeTab = "overview";
+    private int totalBookings = 47;
+    private int totalRevenue = 28450;
+    private int pendingQuotes = 12;
+    private double averageRating = 4.8;
+
+    private List<ActivityItem> recentActivities = new()
+    {
+        new ActivityItem { Icon = "📅", Description = "New booking from Sarah Johnson", TimeAgo = "2 hours ago" },
+        new ActivityItem { Icon = "💰", Description = "Quote request from Mike Chen", TimeAgo = "4 hours ago" },
+        new ActivityItem { Icon = "⭐", Description = "5-star review from Lisa Thompson", TimeAgo = "6 hours ago" },
+    };
+
+    private List<BookingItem> recentBookings = new()
+    {
+        new BookingItem { CustomerName = "Sarah Johnson", Service = "Premium Package", Date = DateTime.Now.AddDays(-1), Status = "confirmed" },
+        new BookingItem { CustomerName = "Mike Chen", Service = "Residential", Date = DateTime.Now.AddDays(-2), Status = "pending" },
+        new BookingItem { CustomerName = "Lisa Thompson", Service = "Custom Design", Date = DateTime.Now.AddDays(-3), Status = "completed" }
+    };
+
+    private List<QuoteItem> recentQuotes = new()
+    {
+        new QuoteItem { CustomerName = "John Smith", Package = "Premium", Total = 750, Date = DateTime.Now.AddDays(-1) },
+        new QuoteItem { CustomerName = "Emily Davis", Package = "Basic", Total = 350, Date = DateTime.Now.AddDays(-2) },
+        new QuoteItem { CustomerName = "Robert Wilson", Package = "Custom", Total = 1200, Date = DateTime.Now.AddDays(-3) }
+    };
+
+    private List<LocationItem> recentLocations = new()
+    {
+        new LocationItem { Name = "Johnson Residence", Address = "123 Main St, Anytown, ST", Status = "completed" },
+        new LocationItem { Name = "Chen Family Home", Address = "456 Oak Ave, Anytown, ST", Status = "pending" },
+        new LocationItem { Name = "Thompson Estate", Address = "789 Pine Rd, Anytown, ST", Status = "scheduled" }
+    };
+
+    protected override void OnInitialized()
+    {
+        // Don't call JavaScript here - wait for after render
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CheckAuthentication();
+        }
+    }
+
+    private async Task CheckAuthentication()
+    {
+        try
+        {
+            var authenticated = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "adminAuthenticated");
+            var loginTime = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "adminLoginTime");
+            
+            if (authenticated == "true" && !string.IsNullOrEmpty(loginTime))
+            {
+                // Check if login is still valid (24 hours)
+                if (DateTime.TryParse(loginTime, out var loginDateTime))
+                {
+                    var timeSinceLogin = DateTime.UtcNow - loginDateTime;
+                    
+                    if (timeSinceLogin.TotalHours < 24)
+                    {
+                        isAuthenticated = true;
+                        StateHasChanged();
+                        return;
+                    }
+                }
+            }
+            
+            // Not authenticated or session expired
+            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminAuthenticated");
+            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminLoginTime");
+            Navigation.NavigateTo("/admin-login");
+        }
+        catch
+        {
+            Navigation.NavigateTo("/admin-login");
+        }
+    }
+
+    private async Task HandleLogout()
+    {
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminAuthenticated");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminLoginTime");
+        Navigation.NavigateTo("/admin-login");
+    }
+
+    private void SetOverviewTab() => activeTab = "overview";
+    private void SetBookingsTab() => activeTab = "bookings";
+    private void SetQuotesTab() => activeTab = "quotes";
+    private void SetMapTab() => activeTab = "map";
+    private void SetAnalyticsTab() => activeTab = "analytics";
+    private void SetContentTab() => activeTab = "content";
+
+    private void OpenMapPage()
+    {
+        Navigation.NavigateTo("/admin-map");
+    }
+
+    public class ActivityItem
+    {
+        public string Icon { get; set; } = "";
+        public string Description { get; set; } = "";
+        public string TimeAgo { get; set; } = "";
+    }
+
+    public class BookingItem
+    {
+        public string CustomerName { get; set; } = "";
+        public string Service { get; set; } = "";
+        public DateTime Date { get; set; }
+        public string Status { get; set; } = "";
+    }
+
+    public class QuoteItem
+    {
+        public string CustomerName { get; set; } = "";
+        public string Package { get; set; } = "";
+        public int Total { get; set; }
+        public DateTime Date { get; set; }
+    }
+
+    public class LocationItem
+    {
+        public string Name { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string Status { get; set; } = "";
+    }
+} 

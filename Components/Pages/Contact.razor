@@ -1,0 +1,181 @@
+@page "/contact"
+@rendermode InteractiveServer
+
+<PageTitle>Contact Us - Lentz Lighting</PageTitle>
+
+<div class="contact-hero">
+    <div class="container">
+        <h1 class="contact-title">Get In Touch</h1>
+        <p class="contact-subtitle">Ready to transform your home into a Christmas wonderland? Contact us today!</p>
+    </div>
+</div>
+
+<div class="contact-section">
+    <div class="container">
+        <div class="contact-content">
+            <div class="contact-info">
+                <h2>Contact Information</h2>
+                <div class="info-item">
+                    <div class="info-icon">📞</div>
+                    <div class="info-content">
+                        <h3>Phone</h3>
+                        <p>(555) 123-4567</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">📧</div>
+                    <div class="info-content">
+                        <h3>Email</h3>
+                        <p>info@lentzlighting.com</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">📍</div>
+                    <div class="info-content">
+                        <h3>Address</h3>
+                        <p>123 Christmas Lane<br>Holiday City, HC 12345</p>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-icon">🕒</div>
+                    <div class="info-content">
+                        <h3>Business Hours</h3>
+                        <p>Monday - Friday: 8:00 AM - 6:00 PM<br>Saturday: 9:00 AM - 4:00 PM<br>Sunday: Closed</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contact-form">
+                <h2>Send Us a Message</h2>
+                <EditForm Model="@contactModel" OnValidSubmit="HandleSubmit">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <InputText id="name" @bind-Value="contactModel.Name" class="form-control" />
+                        <ValidationMessage For="@(() => contactModel.Name)" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <InputText id="email" @bind-Value="contactModel.Email" class="form-control" />
+                        <ValidationMessage For="@(() => contactModel.Email)" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <InputText id="phone" @bind-Value="contactModel.Phone" class="form-control" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="service">Service Interest</label>
+                        <InputSelect id="service" @bind-Value="contactModel.Service" class="form-control">
+                            <option value="">Select a service</option>
+                            <option value="residential">Residential Lighting</option>
+                            <option value="premium">Premium Package</option>
+                            <option value="commercial">Commercial Lighting</option>
+                            <option value="custom">Custom Design</option>
+                        </InputSelect>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <InputTextArea id="message" @bind-Value="contactModel.Message" rows="5" class="form-control" />
+                        <ValidationMessage For="@(() => contactModel.Message)" />
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>Sending...</span>
+                        }
+                        else
+                        {
+                            <span>Send Message</span>
+                        }
+                    </button>
+                </EditForm>
+                
+                @if (showSuccessMessage)
+                {
+                    <div class="success-message">
+                        <span>✅</span>
+                        <p>Thank you! Your message has been sent successfully. We'll get back to you soon!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="faq-section">
+    <div class="container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <h3>How much does Christmas lighting installation cost?</h3>
+                <p>Our residential packages start at $299, with premium packages starting at $599. Commercial projects are custom quoted based on your specific needs.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>How long does installation take?</h3>
+                <p>Most residential installations are completed in 1-2 days. Larger commercial projects may take 3-5 days depending on complexity.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Do you provide maintenance services?</h3>
+                <p>Yes! We offer maintenance packages to ensure your lights stay beautiful throughout the season. We also provide removal services after the holidays.</p>
+            </div>
+            
+            <div class="faq-item">
+                <h3>Are your lights energy efficient?</h3>
+                <p>Absolutely! We use only LED lighting which is up to 90% more energy efficient than traditional incandescent lights.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ContactModel contactModel = new();
+    private bool isSubmitting = false;
+    private bool showSuccessMessage = false;
+
+    private async Task HandleSubmit()
+    {
+        isSubmitting = true;
+        
+        // Simulate API call
+        await Task.Delay(2000);
+        
+        isSubmitting = false;
+        showSuccessMessage = true;
+        
+        // Reset form
+        contactModel = new();
+        
+        // Hide success message after 5 seconds
+        await Task.Delay(5000);
+        showSuccessMessage = false;
+    }
+
+    public class ContactModel
+    {
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = "";
+        
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = "";
+        
+        public string Phone { get; set; } = "";
+        
+        public string Service { get; set; } = "";
+        
+        [Required(ErrorMessage = "Message is required")]
+        [MinLength(10, ErrorMessage = "Message must be at least 10 characters")]
+        public string Message { get; set; } = "";
+    }
+} 

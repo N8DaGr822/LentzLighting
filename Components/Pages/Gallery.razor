@@ -1,0 +1,195 @@
+@page "/gallery"
+@inject IJSRuntime JS
+
+<PageTitle>Gallery - Lentz Lighting</PageTitle>
+
+<div class="gallery-hero">
+    <div class="container">
+        <h1 class="gallery-title">Our Christmas Lighting Gallery</h1>
+        <p class="gallery-subtitle">Browse our stunning installations and get inspired for your own Christmas display</p>
+    </div>
+</div>
+
+<div class="gallery-section">
+    <div class="container">
+        <div class="gallery-filters">
+            <button class="filter-btn active" data-filter="all">All Projects</button>
+            <button class="filter-btn" data-filter="residential">Residential</button>
+            <button class="filter-btn" data-filter="commercial">Commercial</button>
+            <button class="filter-btn" data-filter="custom">Custom Designs</button>
+        </div>
+
+        <div class="gallery-grid">
+            <div class="gallery-item" data-category="residential">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/modern-home-lights.webp" type="image/webp">
+                        <img src="/images/modern-home-lights.jpg" 
+                             alt="Modern home with LED Christmas lighting installation" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Modern Home Lighting</h3>
+                        <p>Contemporary design with LED string lights</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="residential">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/traditional-christmas.webp" type="image/webp">
+                        <img src="/images/traditional-christmas.jpg" 
+                             alt="Traditional Christmas lighting with red and green colors" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Traditional Christmas</h3>
+                        <p>Classic red and green color scheme</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="commercial">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/office-building-lights.webp" type="image/webp">
+                        <img src="/images/office-building-lights.jpg" 
+                             alt="Office building with professional commercial lighting" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Office Building</h3>
+                        <p>Professional commercial lighting</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="custom">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/animated-display.webp" type="image/webp">
+                        <img src="/images/animated-display.jpg" 
+                             alt="Custom animated lighting display with synchronized sequences" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Animated Display</h3>
+                        <p>Custom synchronized lighting sequence</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="residential">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/winter-wonderland.webp" type="image/webp">
+                        <img src="/images/winter-wonderland.jpg" 
+                             alt="Winter wonderland theme with white and blue ice lighting" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Winter Wonderland</h3>
+                        <p>White and blue ice theme</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="custom">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/artistic-display.webp" type="image/webp">
+                        <img src="/images/artistic-display.jpg" 
+                             alt="Unique artistic lighting display with geometric patterns" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Artistic Display</h3>
+                        <p>Unique geometric patterns</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="commercial">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/shopping-center.webp" type="image/webp">
+                        <img src="/images/shopping-center.jpg" 
+                             alt="Large-scale commercial lighting installation at shopping center" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Shopping Center</h3>
+                        <p>Large-scale commercial installation</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gallery-item" data-category="residential">
+                <div class="gallery-image">
+                    <picture>
+                        <source srcset="/images/cozy-cottage.webp" type="image/webp">
+                        <img src="/images/cozy-cottage.jpg" 
+                             alt="Cozy cottage with warm and inviting Christmas lighting design" 
+                             loading="lazy"
+                             width="400" 
+                             height="300"
+                             class="gallery-img">
+                    </picture>
+                    <div class="image-overlay">
+                        <h3>Cozy Cottage</h3>
+                        <p>Warm and inviting lighting design</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="testimonial-highlight">
+    <div class="container">
+        <div class="testimonial-content">
+            <div class="quote">"Lentz Lighting created the most beautiful Christmas display for our home. The attention to detail is incredible!"</div>
+            <div class="author">- Jennifer & Mike Wilson</div>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("initializeGalleryFilters");
+                await JS.InvokeVoidAsync("initializeLazyLoading");
+            }
+            catch
+            {
+                // Handle case where JS functions might not be available during prerendering
+            }
+        }
+    }
+} 

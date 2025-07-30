@@ -1,0 +1,201 @@
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<div class="quote-calculator">
+    <div class="calculator-header">
+        <h2>🎄 Get Your Free Quote</h2>
+        <p>Calculate the cost of your Christmas lighting installation</p>
+    </div>
+
+    <div class="calculator-form">
+        <div class="form-section">
+            <h3>Property Type</h3>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="propertyType" checked="@(quote.PropertyType == "residential")" @onchange="SetResidential" />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Residential Home</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="propertyType" checked="@(quote.PropertyType == "commercial")" @onchange="SetCommercial" />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Commercial Property</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Service Package</h3>
+            <div class="radio-group">
+                <label class="radio-option">
+                    <input type="radio" name="package" checked="@(quote.Package == "basic")" @onchange="SetBasicPackage" />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Basic Package - $299</span>
+                </label>
+                <label class="radio-option">
+                    <input type="radio" name="package" checked="@(quote.Package == "custom")" @onchange="SetCustomPackage" />
+                    <span class="radio-custom"></span>
+                    <span class="radio-label">Custom Design - Quote</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Additional Services</h3>
+            <div class="checkbox-group">
+                <label class="checkbox-option">
+                    <input type="checkbox" @bind="quote.Roofline" />
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-label">Roofline Lighting (+$150)</span>
+                </label>
+                <label class="checkbox-option">
+                    <input type="checkbox" @bind="quote.Trees" />
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-label">Tree Lighting (+$100)</span>
+                </label>
+                <label class="checkbox-option">
+                    <input type="checkbox" @bind="quote.Bushes" />
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-label">Bush Lighting (+$75)</span>
+                </label>
+                <label class="checkbox-option">
+                    <input type="checkbox" @bind="quote.Pathway" />
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-label">Pathway Lighting (+$50)</span>
+                </label>
+                <label class="checkbox-option">
+                    <input type="checkbox" @bind="quote.Animation" />
+                    <span class="checkbox-custom"></span>
+                    <span class="checkbox-label">Animated Effects (+$200)</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Property Size</h3>
+            <div class="input-group">
+                <label for="squareFootage">Square Footage</label>
+                <input type="number" id="squareFootage" @bind="quote.SquareFootage" min="500" max="10000" />
+            </div>
+        </div>
+
+        <div class="quote-result">
+            <div class="result-header">
+                <h3>Estimated Total</h3>
+                <div class="total-price">$@CalculateTotal()</div>
+            </div>
+            <div class="price-breakdown">
+                <div class="breakdown-item">
+                    <span>Base Package:</span>
+                    <span>$@GetBasePrice()</span>
+                </div>
+                @if (quote.Roofline)
+                {
+                    <div class="breakdown-item">
+                        <span>Roofline Lighting:</span>
+                        <span>+$150</span>
+                    </div>
+                }
+                @if (quote.Trees)
+                {
+                    <div class="breakdown-item">
+                        <span>Tree Lighting:</span>
+                        <span>+$100</span>
+                    </div>
+                }
+                @if (quote.Bushes)
+                {
+                    <div class="breakdown-item">
+                        <span>Bush Lighting:</span>
+                        <span>+$75</span>
+                    </div>
+                }
+                @if (quote.Pathway)
+                {
+                    <div class="breakdown-item">
+                        <span>Pathway Lighting:</span>
+                        <span>+$50</span>
+                    </div>
+                }
+                @if (quote.Animation)
+                {
+                    <div class="breakdown-item">
+                        <span>Animated Effects:</span>
+                        <span>+$200</span>
+                    </div>
+                }
+                <div class="breakdown-item total">
+                    <span>Total:</span>
+                    <span>$@CalculateTotal()</span>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-lg" @onclick="RequestQuote">Request Detailed Quote</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private QuoteModel quote = new();
+
+    private int CalculateTotal()
+    {
+        int total = GetBasePrice();
+        
+        if (quote.Roofline) total += 150;
+        if (quote.Trees) total += 100;
+        if (quote.Bushes) total += 75;
+        if (quote.Pathway) total += 50;
+        if (quote.Animation) total += 200;
+        
+        return total;
+    }
+
+    private int GetBasePrice()
+    {
+        return quote.Package switch
+        {
+            "basic" => 299,
+            "custom" => 800,
+            _ => 299
+        };
+    }
+
+    private void SetResidential() => quote.PropertyType = "residential";
+    private void SetCommercial() => quote.PropertyType = "commercial";
+    private void SetBasicPackage() => quote.Package = "basic";
+    private void SetCustomPackage() => quote.Package = "custom";
+
+    private bool shouldNavigateToContact = false;
+
+    private void RequestQuote()
+    {
+        // Set flag to navigate after render
+        shouldNavigateToContact = true;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (shouldNavigateToContact)
+        {
+            shouldNavigateToContact = false;
+            // Store quote details in localStorage
+            await JS.InvokeVoidAsync("localStorage.setItem", "quoteDetails", 
+                System.Text.Json.JsonSerializer.Serialize(quote));
+            Navigation.NavigateTo("/contact");
+        }
+    }
+
+    public class QuoteModel
+    {
+        public string PropertyType { get; set; } = "residential";
+        public string Package { get; set; } = "basic";
+        public bool Roofline { get; set; }
+        public bool Trees { get; set; }
+        public bool Bushes { get; set; }
+        public bool Pathway { get; set; }
+        public bool Animation { get; set; }
+        public int SquareFootage { get; set; } = 2000;
+    }
+} 

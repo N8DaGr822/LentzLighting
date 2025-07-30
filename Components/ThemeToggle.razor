@@ -1,0 +1,57 @@
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+
+<div class="theme-toggle">
+    <button class="theme-btn @(isDarkMode ? "dark" : "light")" @onclick="ToggleTheme" title="@(isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode")">
+        @if (isDarkMode)
+        {
+            <span class="theme-icon">☀️</span>
+        }
+        else
+        {
+            <span class="theme-icon">🌙</span>
+        }
+    </button>
+</div>
+
+@code {
+    private bool isDarkMode = true;
+
+    protected override void OnInitialized()
+    {
+        // Initialize without JS calls
+        isDarkMode = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Check saved theme preference
+            var savedTheme = await JS.InvokeAsync<string>("localStorage.getItem", "theme");
+            isDarkMode = savedTheme != "light";
+            await ApplyTheme();
+        }
+    }
+
+    private async Task ToggleTheme()
+    {
+        isDarkMode = !isDarkMode;
+        await JS.InvokeVoidAsync("localStorage.setItem", "theme", isDarkMode ? "dark" : "light");
+        await ApplyTheme();
+    }
+
+    private async Task ApplyTheme()
+    {
+        if (isDarkMode)
+        {
+            await JS.InvokeVoidAsync("document.documentElement.classList.add", "dark-mode");
+            await JS.InvokeVoidAsync("document.documentElement.classList.remove", "light-mode");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("document.documentElement.classList.add", "light-mode");
+            await JS.InvokeVoidAsync("document.documentElement.classList.remove", "dark-mode");
+        }
+    }
+} 

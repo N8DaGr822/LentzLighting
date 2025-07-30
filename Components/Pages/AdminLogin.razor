@@ -1,0 +1,151 @@
+@page "/admin-login"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Admin Login - Lentz Lighting</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex, nofollow" />
+</HeadContent>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-icon">🔐</div>
+            <h1>Admin Login</h1>
+            <p>Enter your credentials to access the admin dashboard</p>
+        </div>
+        
+        <div class="login-form">
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @errorMessage
+                </div>
+            }
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    class="form-control @(showError ? "is-invalid" : "")" 
+                    @bind-value="username" 
+                    @bind-value:event="oninput"
+                    @onkeyup="HandleKeyPress"
+                    placeholder="Enter username"
+                    autocomplete="username" />
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="password-input">
+                    <input 
+                        type="@(showPassword ? "text" : "password")" 
+                        id="password" 
+                        class="form-control @(showError ? "is-invalid" : "")" 
+                        @bind-value="password" 
+                        @bind-value:event="oninput"
+                        @onkeyup="HandleKeyPress"
+                        placeholder="Enter password"
+                        autocomplete="current-password" />
+                    <button type="button" class="password-toggle" @onclick="TogglePassword">
+                        @(showPassword ? "🙈" : "👁️")
+                    </button>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary btn-lg login-btn" @onclick="HandleLogin" disabled="@isLoading">
+                @if (isLoading)
+                {
+                    <span>Logging in...</span>
+                }
+                else
+                {
+                    <span>Login</span>
+                }
+            </button>
+        </div>
+        
+        <div class="login-footer">
+            <p>🔒 Secure admin access for Lentz Lighting</p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string username = "";
+    private string password = "";
+    private string errorMessage = "";
+    private bool showError = false;
+    private bool isLoading = false;
+    private bool showPassword = false;
+    
+    // Default admin credentials (in production, these should be stored securely)
+    private const string ADMIN_USERNAME = "admin";
+    private const string ADMIN_PASSWORD = "lentz2024";
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                ShowError("Please enter both username and password.");
+                return;
+            }
+
+            isLoading = true;
+            errorMessage = "";
+            showError = false;
+            StateHasChanged();
+
+            // Simulate network delay
+            await Task.Delay(1000);
+
+            if (username.Equals(ADMIN_USERNAME, StringComparison.OrdinalIgnoreCase) && 
+                password.Equals(ADMIN_PASSWORD, StringComparison.Ordinal))
+            {
+                // Store authentication state (in production, use proper session management)
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "adminAuthenticated", "true");
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "adminLoginTime", DateTime.UtcNow.ToString("O"));
+                
+                Navigation.NavigateTo("/admin");
+            }
+            else
+            {
+                ShowError("Invalid username or password. Please try again.");
+                password = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            ShowError($"Login error: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            _ = HandleLogin();
+        }
+    }
+
+    private void TogglePassword()
+    {
+        showPassword = !showPassword;
+    }
+
+    private void ShowError(string message)
+    {
+        errorMessage = message;
+        showError = true;
+        StateHasChanged();
+    }
+} 

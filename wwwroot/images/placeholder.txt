@@ -1,0 +1,18 @@
+Required WebP Images for Gallery:
+
+1. modern-home-lights.webp - Modern home with LED Christmas lighting
+2. traditional-christmas.webp - Traditional red and green Christmas lighting
+3. office-building-lights.webp - Office building with commercial lighting
+4. animated-display.webp - Custom animated lighting display
+5. winter-wonderland.webp - White and blue ice theme lighting
+6. artistic-display.webp - Unique geometric patterns
+7. shopping-center.webp - Large-scale commercial installation
+8. cozy-cottage.webp - Warm and inviting cottage lighting
+
+Image Specifications:
+- Format: WebP (primary) with JPG fallback
+- Dimensions: 400x300 pixels
+- Quality: 80-85% for optimal file size
+- Alt text: Descriptive and SEO-friendly
+
+Note: Replace these placeholder references with actual optimized WebP images for production use. 

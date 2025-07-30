@@ -1,0 +1,65 @@
+@inject IJSRuntime JS
+
+@if (!consentGiven)
+{
+    <div class="cookie-banner @(isVisible ? "show" : "")">
+        <div class="cookie-content">
+            <div class="cookie-icon">🍪</div>
+            <div class="cookie-text">
+                <h3>We use cookies to enhance your experience</h3>
+                <p>This website uses cookies to improve your browsing experience and provide personalized content. By continuing to use this site, you consent to our use of cookies.</p>
+            </div>
+            <div class="cookie-actions">
+                <button class="btn btn-primary" @onclick="AcceptCookies">Accept All</button>
+                <button class="btn btn-outline" @onclick="DeclineCookies">Decline</button>
+                <a href="/privacy" class="cookie-link">Learn More</a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool consentGiven = false;
+    private bool isVisible = false;
+
+    protected override void OnInitialized()
+    {
+        // Initialize without JS calls
+        consentGiven = false;
+        isVisible = false;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Check if consent was already given
+            var consent = await JS.InvokeAsync<string>("localStorage.getItem", "cookieConsent");
+            consentGiven = consent == "accepted";
+            
+            if (!consentGiven)
+            {
+                // Show banner after a short delay
+                await Task.Delay(1000);
+                isVisible = true;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task AcceptCookies()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "cookieConsent", "accepted");
+        consentGiven = true;
+        isVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task DeclineCookies()
+    {
+        await JS.InvokeVoidAsync("localStorage.setItem", "cookieConsent", "declined");
+        consentGiven = true;
+        isVisible = false;
+        StateHasChanged();
+    }
+} 

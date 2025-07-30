@@ -1,0 +1,229 @@
+@page "/booking"
+@rendermode InteractiveServer
+
+<PageTitle>Book Your Christmas Lighting - Lentz Lighting</PageTitle>
+<HeadContent>
+    <meta name="description" content="Book your Christmas lighting installation appointment online. Choose your preferred date and time." />
+</HeadContent>
+
+<div class="booking-hero">
+    <div class="container">
+        <h1 class="booking-title">Book Your Installation</h1>
+        <p class="booking-subtitle">Schedule your Christmas lighting installation appointment</p>
+    </div>
+</div>
+
+<div class="booking-section">
+    <div class="container">
+        <div class="booking-content">
+            <div class="booking-form">
+                <h2>Appointment Details</h2>
+                <EditForm Model="@bookingModel" OnValidSubmit="HandleBooking">
+                    <DataAnnotationsValidator />
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <InputText id="name" @bind-Value="bookingModel.Name" class="form-control" />
+                            <ValidationMessage For="@(() => bookingModel.Name)" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <InputText id="email" @bind-Value="bookingModel.Email" class="form-control" />
+                            <ValidationMessage For="@(() => bookingModel.Email)" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Phone Number *</label>
+                            <InputText id="phone" @bind-Value="bookingModel.Phone" class="form-control" />
+                            <ValidationMessage For="@(() => bookingModel.Phone)" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Property Address *</label>
+                            <InputText id="address" @bind-Value="bookingModel.Address" class="form-control" />
+                            <ValidationMessage For="@(() => bookingModel.Address)" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="service">Service Type *</label>
+                            <InputSelect id="service" @bind-Value="bookingModel.Service" class="form-control">
+                                <option value="">Select a service</option>
+                                <option value="residential">Residential Lighting</option>
+                                <option value="premium">Premium Package</option>
+                                <option value="commercial">Commercial Lighting</option>
+                                <option value="custom">Custom Design</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => bookingModel.Service)" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Preferred Date *</label>
+                            <InputDate id="date" @bind-Value="bookingModel.PreferredDate" class="form-control" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
+                            <ValidationMessage For="@(() => bookingModel.PreferredDate)" />
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="time">Preferred Time *</label>
+                            <InputSelect id="time" @bind-Value="bookingModel.PreferredTime" class="form-control">
+                                <option value="">Select a time</option>
+                                <option value="morning">Morning (8:00 AM - 12:00 PM)</option>
+                                <option value="afternoon">Afternoon (12:00 PM - 4:00 PM)</option>
+                                <option value="evening">Evening (4:00 PM - 8:00 PM)</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => bookingModel.PreferredTime)" />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="duration">Estimated Duration</label>
+                            <InputSelect id="duration" @bind-Value="bookingModel.Duration" class="form-control">
+                                <option value="1-2">1-2 hours</option>
+                                <option value="2-4">2-4 hours</option>
+                                <option value="4-6">4-6 hours</option>
+                                <option value="6+">6+ hours</option>
+                            </InputSelect>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">Special Requirements</label>
+                        <InputTextArea id="notes" @bind-Value="bookingModel.Notes" rows="4" class="form-control" placeholder="Any special requirements or notes..." />
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg" disabled="@isSubmitting">
+                        @if (isSubmitting)
+                        {
+                            <span>Booking...</span>
+                        }
+                        else
+                        {
+                            <span>Book Appointment</span>
+                        }
+                    </button>
+                </EditForm>
+            </div>
+            
+            <div class="booking-info">
+                <h3>Booking Information</h3>
+                <div class="info-card">
+                    <div class="info-icon">📅</div>
+                    <div class="info-content">
+                        <h4>Available Times</h4>
+                        <p>Monday - Friday: 8:00 AM - 8:00 PM<br>Saturday: 9:00 AM - 6:00 PM</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">⏱️</div>
+                    <div class="info-content">
+                        <h4>Installation Time</h4>
+                        <p>Most installations take 2-4 hours depending on the size and complexity of your project.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">💰</div>
+                    <div class="info-content">
+                        <h4>Payment</h4>
+                        <p>We require a 50% deposit to confirm your booking. The remaining balance is due upon completion.</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">🌦️</div>
+                    <div class="info-content">
+                        <h4>Weather Policy</h4>
+                        <p>Installations may be rescheduled due to inclement weather for safety reasons.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (showSuccessMessage)
+{
+    <div class="booking-success">
+        <div class="success-content">
+            <div class="success-icon">✅</div>
+            <h3>Booking Confirmed!</h3>
+            <p>Thank you for booking with Lentz Lighting. We've sent a confirmation email with your appointment details.</p>
+            <div class="success-details">
+                <p><strong>Booking Reference:</strong> @bookingReference</p>
+                <p><strong>Date:</strong> @bookingModel.PreferredDate?.ToString("MMMM dd, yyyy")</p>
+                <p><strong>Time:</strong> @GetTimeDisplay()</p>
+            </div>
+            <div class="success-actions">
+                <a href="/" class="btn btn-primary">Return Home</a>
+                <a href="/contact" class="btn btn-outline">Contact Us</a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private BookingModel bookingModel = new();
+    private bool isSubmitting = false;
+    private bool showSuccessMessage = false;
+    private string bookingReference = "";
+
+    private async Task HandleBooking()
+    {
+        isSubmitting = true;
+        
+        // Simulate API call
+        await Task.Delay(2000);
+        
+        // Generate booking reference
+        bookingReference = $"LL-{DateTime.Now:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
+        
+        isSubmitting = false;
+        showSuccessMessage = true;
+    }
+
+    private string GetTimeDisplay()
+    {
+        return bookingModel.PreferredTime switch
+        {
+            "morning" => "8:00 AM - 12:00 PM",
+            "afternoon" => "12:00 PM - 4:00 PM",
+            "evening" => "4:00 PM - 8:00 PM",
+            _ => "TBD"
+        };
+    }
+
+    public class BookingModel
+    {
+        [Required(ErrorMessage = "Name is required")]
+        public string Name { get; set; } = "";
+        
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address")]
+        public string Email { get; set; } = "";
+        
+        [Required(ErrorMessage = "Phone number is required")]
+        public string Phone { get; set; } = "";
+        
+        [Required(ErrorMessage = "Address is required")]
+        public string Address { get; set; } = "";
+        
+        [Required(ErrorMessage = "Service type is required")]
+        public string Service { get; set; } = "";
+        
+        [Required(ErrorMessage = "Preferred date is required")]
+        public DateTime? PreferredDate { get; set; }
+        
+        [Required(ErrorMessage = "Preferred time is required")]
+        public string PreferredTime { get; set; } = "";
+        
+        public string Duration { get; set; } = "2-4";
+        public string Notes { get; set; } = "";
+    }
+} 

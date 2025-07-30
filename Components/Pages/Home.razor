@@ -1,0 +1,85 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+
+<PageTitle>Lentz Lighting - Christmas Magic</PageTitle>
+<HeadContent>
+    <meta name="description" content="Transform your home into a Christmas wonderland with professional lighting installation. Residential and commercial Christmas lighting services with free quotes." />
+    <meta name="keywords" content="Christmas lighting, holiday lights, Christmas light installation, residential lighting, commercial lighting, LED Christmas lights" />
+    <meta property="og:title" content="Lentz Lighting - Transform Your Home Into a Christmas Wonderland" />
+    <meta property="og:description" content="Professional Christmas lighting installation and design services. Get your free quote today!" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://lentzlighting.com/" />
+    <link rel="canonical" href="https://lentzlighting.com/" />
+</HeadContent>
+
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">Transform Your Home Into a Christmas Wonderland</h1>
+        <p class="hero-subtitle">Professional Christmas lighting installation and design services</p>
+        <div class="hero-buttons">
+            <button class="btn btn-primary btn-lg" @onclick="NavigateToBooking">Get Free Quote</button>
+            <button class="btn btn-outline btn-lg" @onclick="NavigateToGallery">View Gallery</button>
+        </div>
+    </div>
+    <div class="hero-decoration">
+        <div class="christmas-tree">🎄</div>
+    </div>
+</div>
+
+<div class="features-section">
+    <div class="container">
+        <h2 class="section-title">Why Choose Lentz Lighting?</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">✨</div>
+                <h3>Professional Installation</h3>
+                <p>Expert installation by certified technicians with years of experience in Christmas lighting.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Custom Design</h3>
+                <p>Unique lighting designs tailored to your home's architecture and your personal style.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Energy Efficient</h3>
+                <p>LED lighting solutions that save energy while creating stunning visual effects.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Warranty & Support</h3>
+                <p>Comprehensive warranty and ongoing support to ensure your lights shine all season.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2>Ready to Light Up Your Christmas?</h2>
+            <p>Contact us today for a free consultation and quote</p>
+            <button class="btn btn-primary btn-lg" @onclick="NavigateToContact">Contact Us Now</button>
+        </div>
+    </div>
+</div>
+
+<TestimonialsCarousel />
+
+@code {
+    private void NavigateToBooking()
+    {
+        Navigation.NavigateTo("booking");
+    }
+
+    private void NavigateToGallery()
+    {
+        Navigation.NavigateTo("gallery");
+    }
+
+    private void NavigateToContact()
+    {
+        Navigation.NavigateTo("contact");
+    }
+}

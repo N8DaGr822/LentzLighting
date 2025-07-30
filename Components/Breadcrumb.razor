@@ -1,0 +1,42 @@
+@inject NavigationManager Navigation
+
+<div class="breadcrumb-container">
+    <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+                <a href="/" class="breadcrumb-link">
+                    <span class="breadcrumb-icon">🏠</span>
+                    Home
+                </a>
+            </li>
+            
+            @if (CurrentPage != "Home")
+            {
+                <li class="breadcrumb-separator">❄️</li>
+                <li class="breadcrumb-item">
+                    <span class="breadcrumb-current">@CurrentPage</span>
+                </li>
+            }
+        </ol>
+    </nav>
+</div>
+
+@code {
+    private string CurrentPage => GetCurrentPage();
+
+    private string GetCurrentPage()
+    {
+        var uri = Navigation.Uri;
+        
+        if (uri.Contains("/services"))
+            return "Services";
+        else if (uri.Contains("/gallery"))
+            return "Gallery";
+        else if (uri.Contains("/about"))
+            return "About";
+        else if (uri.Contains("/contact"))
+            return "Contact";
+        else
+            return "Home";
+    }
+} 

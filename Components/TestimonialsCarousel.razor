@@ -1,0 +1,159 @@
+@rendermode InteractiveServer
+
+<div class="testimonials-carousel">
+    <div class="carousel-header">
+        <h2>What Our Customers Say</h2>
+        <p>Don't just take our word for it - hear from our satisfied customers</p>
+    </div>
+    
+    <div class="carousel-container">
+        <button class="carousel-btn prev" @onclick="PreviousSlide" disabled="@(currentSlide == 0)">
+            <span>❮</span>
+        </button>
+        
+        <div class="carousel-track" style="transform: translateX(-@(currentSlide * 100)%)">
+            @foreach (var testimonial in testimonials)
+            {
+                <div class="testimonial-slide">
+                    <div class="testimonial-content">
+                        <div class="stars">
+                            @for (int i = 0; i < testimonial.Rating; i++)
+                            {
+                                <span class="star">⭐</span>
+                            }
+                        </div>
+                        <blockquote>@testimonial.Quote</blockquote>
+                        <div class="testimonial-author">
+                            <div class="author-avatar">@testimonial.Avatar</div>
+                            <div class="author-info">
+                                <h4>@testimonial.Name</h4>
+                                <p>@testimonial.Location</p>
+                                <span class="service-type">@testimonial.ServiceType</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <button class="carousel-btn next" @onclick="NextSlide" disabled="@(currentSlide == testimonials.Count - 1)">
+            <span>❯</span>
+        </button>
+    </div>
+    
+    <div class="carousel-indicators">
+        @for (int i = 0; i < testimonials.Count; i++)
+        {
+            <button class="indicator @(i == currentSlide ? "active" : "")" @onclick="() => GoToSlide(i)"></button>
+        }
+    </div>
+</div>
+
+@code {
+    private int currentSlide = 0;
+    private List<Testimonial> testimonials = new()
+    {
+        new Testimonial
+        {
+            Name = "Sarah Johnson",
+            Location = "Maple Street, Downtown",
+            ServiceType = "Premium Package",
+            Rating = 5,
+            Quote = "Lentz Lighting transformed our home into a Christmas wonderland! The team was professional, efficient, and the results exceeded our expectations. Our neighbors can't stop complimenting us!",
+            Avatar = "👩‍🦰"
+        },
+        new Testimonial
+        {
+            Name = "Mike & Lisa Chen",
+            Location = "Oak Avenue, Suburbs",
+            ServiceType = "Residential Package",
+            Rating = 5,
+            Quote = "We've been using Lentz Lighting for 3 years now and they never disappoint. The quality of work and attention to detail is outstanding. Highly recommend!",
+            Avatar = "👨‍👩‍👧‍👦"
+        },
+        new Testimonial
+        {
+            Name = "Robert Martinez",
+            Location = "Pine Drive, Countryside",
+            ServiceType = "Custom Design",
+            Rating = 5,
+            Quote = "The custom design they created for our property was absolutely stunning. The animated effects and color coordination made our home the talk of the neighborhood!",
+            Avatar = "👨‍🦳"
+        },
+        new Testimonial
+        {
+            Name = "Jennifer Williams",
+            Location = "Cedar Lane, City Center",
+            ServiceType = "Commercial Package",
+            Rating = 5,
+            Quote = "As a business owner, I needed something that would attract customers. Lentz Lighting delivered a spectacular display that increased our foot traffic significantly!",
+            Avatar = "👩‍💼"
+        },
+        new Testimonial
+        {
+            Name = "David & Emily Thompson",
+            Location = "Elm Street, Historic District",
+            ServiceType = "Premium Package",
+            Rating = 5,
+            Quote = "The team worked around our busy schedule and completed the installation in record time. The lights are beautiful and the service was exceptional!",
+            Avatar = "👨‍👩‍👦"
+        }
+    };
+
+    private void NextSlide()
+    {
+        if (currentSlide < testimonials.Count - 1)
+        {
+            currentSlide++;
+        }
+    }
+
+    private void PreviousSlide()
+    {
+        if (currentSlide > 0)
+        {
+            currentSlide--;
+        }
+    }
+
+    private void GoToSlide(int slideIndex)
+    {
+        currentSlide = slideIndex;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Auto-advance carousel
+            _ = AutoAdvance();
+        }
+    }
+
+    private async Task AutoAdvance()
+    {
+        while (true)
+        {
+            await Task.Delay(5000); // 5 seconds
+            if (currentSlide < testimonials.Count - 1)
+            {
+                currentSlide++;
+            }
+            else
+            {
+                currentSlide = 0;
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    public class Testimonial
+    {
+        public string Name { get; set; } = "";
+        public string Location { get; set; } = "";
+        public string ServiceType { get; set; } = "";
+        public int Rating { get; set; }
+        public string Quote { get; set; } = "";
+        public string Avatar { get; set; } = "";
+    }
+} 

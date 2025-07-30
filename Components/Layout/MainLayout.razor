@@ -1,0 +1,38 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <header class="christmas-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <h1 class="brand-title">🎄 Lentz Lighting</h1>
+                <p class="brand-subtitle">Illuminating Your Christmas Dreams</p>
+            </div>
+            @* <div class="snowflakes">
+                <div class="snowflake">❄</div>
+                <div class="snowflake">❅</div>
+                <div class="snowflake">❆</div>
+            </div> *@
+        </div>
+        <nav class="header-nav">
+            <NavMenu />
+        </nav>
+    </header>
+
+    <Breadcrumb />
+
+    <div class="main-container">
+        <main class="main-content">
+            <article class="content">
+                @Body
+            </article>
+        </main>
+    </div>
+</div>
+
+<CookieConsent />
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

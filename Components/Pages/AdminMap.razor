@@ -1,0 +1,260 @@
+@page "/admin-map"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Admin Map - Lentz Lighting</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="admin-map.js"></script>
+</HeadContent>
+
+@if (!isAuthenticated)
+{
+    <div class="loading-container">
+        <div class="loading-spinner">⏳</div>
+        <p>Checking authentication...</p>
+    </div>
+}
+else
+{
+    <div class="admin-hero">
+        <div class="container">
+            <div class="admin-header">
+                <div>
+                    <h1 class="admin-title">Service Area Map</h1>
+                    <p class="admin-subtitle">Track installations, customers, and service areas</p>
+                </div>
+                <div class="admin-actions">
+                    <button class="btn btn-outline" @onclick="HandleLogout">
+                        🚪 Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="map-section">
+        <div class="container">
+            <div class="map-controls">
+                <div class="control-group">
+                    <label>Map Layer:</label>
+                    <select @bind="selectedLayer" @bind:after="UpdateMapLayer">
+                        <option value="installations">Installations</option>
+                        <option value="customers">Customers</option>
+                        <option value="service-areas">Service Areas</option>
+                        <option value="all">All Locations</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Status Filter:</label>
+                    <select @bind="selectedStatus" @bind:after="UpdateMapLayer">
+                        <option value="all">All Status</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                        <option value="scheduled">Scheduled</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" @onclick="AddNewLocation">
+                    📍 Add New Location
+                </button>
+            </div>
+            
+            <div class="map-container">
+                <div id="map" class="map"></div>
+                
+                <div class="map-sidebar">
+                    <div class="sidebar-header">
+                        <h3>Location Details</h3>
+                        <button class="btn btn-sm btn-outline" @onclick="CloseSidebar">✕</button>
+                    </div>
+                    
+                    @if (selectedLocation != null)
+                    {
+                        <div class="location-details">
+                            <div class="location-header">
+                                <h4>@selectedLocation.Name</h4>
+                                <span class="status @selectedLocation.Status">@selectedLocation.Status</span>
+                            </div>
+                            
+                            <div class="location-info">
+                                <p><strong>Address:</strong> @selectedLocation.Address</p>
+                                <p><strong>Customer:</strong> @selectedLocation.CustomerName</p>
+                                <p><strong>Service:</strong> @selectedLocation.ServiceType</p>
+                                <p><strong>Date:</strong> @selectedLocation.Date.ToString("MMM dd, yyyy")</p>
+                                <p><strong>Value:</strong> $@selectedLocation.Value</p>
+                            </div>
+                            
+                            <div class="location-actions">
+                                <button class="btn btn-sm btn-primary">Edit</button>
+                                <button class="btn btn-sm btn-outline">View Details</button>
+                                <button class="btn btn-sm btn-outline">Contact Customer</button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="no-selection">
+                            <p>Select a location on the map to view details</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <div class="map-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-content">
+                        <h3>@totalLocations</h3>
+                        <p>Total Locations</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <h3>@completedInstallations</h3>
+                        <p>Completed</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⏳</div>
+                    <div class="stat-content">
+                        <h3>@pendingInstallations</h3>
+                        <p>Pending</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-content">
+                        <h3>$@totalValue</h3>
+                        <p>Total Value</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool isAuthenticated = false;
+    private string selectedLayer = "all";
+    private string selectedStatus = "all";
+    private MapLocation? selectedLocation = null;
+    
+    private int totalLocations = 24;
+    private int completedInstallations = 18;
+    private int pendingInstallations = 6;
+    private int totalValue = 28450;
+
+    private List<MapLocation> locations = new()
+    {
+        new MapLocation { Id = 1, Name = "Johnson Residence", Address = "123 Main St, Anytown, ST", CustomerName = "Sarah Johnson", ServiceType = "Premium Package", Status = "completed", Date = DateTime.Now.AddDays(-5), Value = 750, Latitude = 40.7128, Longitude = -74.0060 },
+        new MapLocation { Id = 2, Name = "Chen Family Home", Address = "456 Oak Ave, Anytown, ST", CustomerName = "Mike Chen", ServiceType = "Residential", Status = "pending", Date = DateTime.Now.AddDays(3), Value = 450, Latitude = 40.7140, Longitude = -74.0080 },
+        new MapLocation { Id = 3, Name = "Thompson Estate", Address = "789 Pine Rd, Anytown, ST", CustomerName = "Lisa Thompson", ServiceType = "Custom Design", Status = "scheduled", Date = DateTime.Now.AddDays(7), Value = 1200, Latitude = 40.7100, Longitude = -74.0040 },
+        new MapLocation { Id = 4, Name = "Smith Residence", Address = "321 Elm St, Anytown, ST", CustomerName = "John Smith", ServiceType = "Premium Package", Status = "completed", Date = DateTime.Now.AddDays(-10), Value = 850, Latitude = 40.7160, Longitude = -74.0100 },
+        new MapLocation { Id = 5, Name = "Davis Home", Address = "654 Maple Dr, Anytown, ST", CustomerName = "Emily Davis", ServiceType = "Basic Package", Status = "completed", Date = DateTime.Now.AddDays(-15), Value = 350, Latitude = 40.7080, Longitude = -74.0020 }
+    };
+
+    protected override void OnInitialized()
+    {
+        // Don't call JavaScript here - wait for after render
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await CheckAuthentication();
+        }
+    }
+
+    private async Task CheckAuthentication()
+    {
+        try
+        {
+            var authenticated = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "adminAuthenticated");
+            var loginTime = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "adminLoginTime");
+            
+            if (authenticated == "true" && !string.IsNullOrEmpty(loginTime))
+            {
+                if (DateTime.TryParse(loginTime, out var loginDateTime))
+                {
+                    var timeSinceLogin = DateTime.UtcNow - loginDateTime;
+                    if (timeSinceLogin.TotalHours < 24)
+                    {
+                        isAuthenticated = true;
+                        StateHasChanged();
+                        await InitializeMap();
+                        return;
+                    }
+                }
+            }
+            
+            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminAuthenticated");
+            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminLoginTime");
+            Navigation.NavigateTo("/admin-login");
+        }
+        catch
+        {
+            Navigation.NavigateTo("/admin-login");
+        }
+    }
+
+    private async Task InitializeMap()
+    {
+        await JSRuntime.InvokeVoidAsync("initializeMap", locations, DotNetObjectReference.Create(this));
+    }
+
+    private async Task UpdateMapLayer()
+    {
+        var filteredLocations = locations.Where(l => 
+            (selectedLayer == "all" || selectedLayer == l.ServiceType.ToLower().Replace(" ", "-")) &&
+            (selectedStatus == "all" || selectedStatus == l.Status)
+        ).ToList();
+        
+        await JSRuntime.InvokeVoidAsync("updateMapMarkers", filteredLocations);
+    }
+
+    private void AddNewLocation()
+    {
+        // TODO: Implement add new location functionality
+    }
+
+    private void CloseSidebar()
+    {
+        selectedLocation = null;
+        StateHasChanged();
+    }
+
+    private async Task HandleLogout()
+    {
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminAuthenticated");
+        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminLoginTime");
+        Navigation.NavigateTo("/admin-login");
+    }
+
+    [JSInvokable]
+    public void OnLocationSelected(int locationId)
+    {
+        selectedLocation = locations.FirstOrDefault(l => l.Id == locationId);
+        StateHasChanged();
+    }
+
+    public class MapLocation
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Address { get; set; } = "";
+        public string CustomerName { get; set; } = "";
+        public string ServiceType { get; set; } = "";
+        public string Status { get; set; } = "";
+        public DateTime Date { get; set; }
+        public int Value { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+    }
+} 
