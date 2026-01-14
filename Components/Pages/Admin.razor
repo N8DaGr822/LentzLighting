@@ -1,23 +1,23 @@
 @page "/admin"
 @rendermode InteractiveServer
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using LentzLighting.Models
+@using LentzLighting.Data
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize(Policy = "AdminOnly")]
 @inject NavigationManager Navigation
-@inject IJSRuntime JSRuntime
+@inject SignInManager<ApplicationUser> SignInManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext DbContext
 
 <PageTitle>Admin Dashboard - Lentz Lighting</PageTitle>
 <HeadContent>
     <meta name="robots" content="noindex, nofollow" />
 </HeadContent>
 
-@if (!isAuthenticated)
-{
-    <div class="loading-container">
-        <div class="loading-spinner">⏳</div>
-        <p>Checking authentication...</p>
-    </div>
-}
-else
-{
-    <div class="admin-hero">
+<div class="admin-hero">
         <div class="container">
             <div class="admin-header">
                 <div>
@@ -303,14 +303,12 @@ else
             </div>
         </div>
     </div>
-}
 
 @code {
-    private bool isAuthenticated = false;
     private string activeTab = "overview";
-    private int totalBookings = 47;
-    private int totalRevenue = 28450;
-    private int pendingQuotes = 12;
+    private int totalBookings = 0;
+    private int totalRevenue = 0;
+    private int pendingQuotes = 0;
     private double averageRating = 4.8;
 
     private List<ActivityItem> recentActivities = new()
@@ -320,19 +318,8 @@ else
         new ActivityItem { Icon = "⭐", Description = "5-star review from Lisa Thompson", TimeAgo = "6 hours ago" },
     };
 
-    private List<BookingItem> recentBookings = new()
-    {
-        new BookingItem { CustomerName = "Sarah Johnson", Service = "Premium Package", Date = DateTime.Now.AddDays(-1), Status = "confirmed" },
-        new BookingItem { CustomerName = "Mike Chen", Service = "Residential", Date = DateTime.Now.AddDays(-2), Status = "pending" },
-        new BookingItem { CustomerName = "Lisa Thompson", Service = "Custom Design", Date = DateTime.Now.AddDays(-3), Status = "completed" }
-    };
-
-    private List<QuoteItem> recentQuotes = new()
-    {
-        new QuoteItem { CustomerName = "John Smith", Package = "Premium", Total = 750, Date = DateTime.Now.AddDays(-1) },
-        new QuoteItem { CustomerName = "Emily Davis", Package = "Basic", Total = 350, Date = DateTime.Now.AddDays(-2) },
-        new QuoteItem { CustomerName = "Robert Wilson", Package = "Custom", Total = 1200, Date = DateTime.Now.AddDays(-3) }
-    };
+    private List<BookingItem> recentBookings = new();
+    private List<QuoteItem> recentQuotes = new();
 
     private List<LocationItem> recentLocations = new()
     {
@@ -341,57 +328,54 @@ else
         new LocationItem { Name = "Thompson Estate", Address = "789 Pine Rd, Anytown, ST", Status = "scheduled" }
     };
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Don't call JavaScript here - wait for after render
+        await LoadDashboardData();
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await CheckAuthentication();
-        }
-    }
-
-    private async Task CheckAuthentication()
+    private async Task LoadDashboardData()
     {
         try
         {
-            var authenticated = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "adminAuthenticated");
-            var loginTime = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "adminLoginTime");
+            totalBookings = DbContext.Bookings.Count();
+            totalRevenue = DbContext.Bookings.Where(b => b.TotalPrice.HasValue).Sum(b => b.TotalPrice!.Value);
+            pendingQuotes = DbContext.Quotes.Count(q => q.Status == "pending");
             
-            if (authenticated == "true" && !string.IsNullOrEmpty(loginTime))
-            {
-                // Check if login is still valid (24 hours)
-                if (DateTime.TryParse(loginTime, out var loginDateTime))
+            // Load recent bookings
+            recentBookings = DbContext.Bookings
+                .OrderByDescending(b => b.CreatedDate)
+                .Take(10)
+                .Select(b => new BookingItem
                 {
-                    var timeSinceLogin = DateTime.UtcNow - loginDateTime;
-                    
-                    if (timeSinceLogin.TotalHours < 24)
-                    {
-                        isAuthenticated = true;
-                        StateHasChanged();
-                        return;
-                    }
-                }
-            }
+                    CustomerName = b.Name,
+                    Service = b.Service,
+                    Date = b.PreferredDate,
+                    Status = b.Status
+                })
+                .ToList();
             
-            // Not authenticated or session expired
-            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminAuthenticated");
-            await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminLoginTime");
-            Navigation.NavigateTo("/admin-login");
+            // Load recent quotes
+            recentQuotes = DbContext.Quotes
+                .OrderByDescending(q => q.CreatedDate)
+                .Take(10)
+                .Select(q => new QuoteItem
+                {
+                    CustomerName = q.CustomerName ?? "Unknown",
+                    Package = q.Package,
+                    Total = q.TotalPrice,
+                    Date = q.CreatedDate
+                })
+                .ToList();
         }
         catch
         {
-            Navigation.NavigateTo("/admin-login");
+            // Error loading data - use defaults
         }
     }
 
     private async Task HandleLogout()
     {
-        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminAuthenticated");
-        await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "adminLoginTime");
+        await SignInManager.SignOutAsync();
         Navigation.NavigateTo("/admin-login");
     }
 

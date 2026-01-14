@@ -1,5 +1,8 @@
 @page "/booking"
 @rendermode InteractiveServer
+@using LentzLighting.Data
+@using LentzLighting.Models
+@inject ApplicationDbContext DbContext
 
 <PageTitle>Book Your Christmas Lighting - Lentz Lighting</PageTitle>
 <HeadContent>
@@ -178,14 +181,43 @@
     {
         isSubmitting = true;
         
-        // Simulate API call
-        await Task.Delay(2000);
-        
-        // Generate booking reference
-        bookingReference = $"LL-{DateTime.Now:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
-        
-        isSubmitting = false;
-        showSuccessMessage = true;
+        try
+        {
+            // Generate booking reference
+            bookingReference = $"LL-{DateTime.Now:yyyyMMdd}-{Random.Shared.Next(1000, 9999)}";
+            
+            // Create booking entity
+            var booking = new Models.Booking
+            {
+                Name = bookingModel.Name,
+                Email = bookingModel.Email,
+                Phone = bookingModel.Phone,
+                Address = bookingModel.Address,
+                Service = bookingModel.Service,
+                PreferredDate = bookingModel.PreferredDate ?? DateTime.Now,
+                PreferredTime = bookingModel.PreferredTime,
+                Duration = bookingModel.Duration,
+                Notes = bookingModel.Notes,
+                Status = "pending",
+                BookingReference = bookingReference,
+                CreatedDate = DateTime.UtcNow
+            };
+            
+            // Save to database
+            DbContext.Bookings.Add(booking);
+            await DbContext.SaveChangesAsync();
+            
+            showSuccessMessage = true;
+        }
+        catch (Exception)
+        {
+            // Error saving - could be enhanced with proper error handling
+            showSuccessMessage = false;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
     }
 
     private string GetTimeDisplay()

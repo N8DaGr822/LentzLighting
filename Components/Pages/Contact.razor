@@ -1,5 +1,8 @@
 @page "/contact"
 @rendermode InteractiveServer
+@using LentzLighting.Data
+@using LentzLighting.Models
+@inject ApplicationDbContext DbContext
 
 <PageTitle>Contact Us - Lentz Lighting</PageTitle>
 
@@ -147,18 +150,42 @@
     {
         isSubmitting = true;
         
-        // Simulate API call
-        await Task.Delay(2000);
-        
-        isSubmitting = false;
-        showSuccessMessage = true;
-        
-        // Reset form
-        contactModel = new();
-        
-        // Hide success message after 5 seconds
-        await Task.Delay(5000);
-        showSuccessMessage = false;
+        try
+        {
+            // Create contact entity
+            var contact = new Models.Contact
+            {
+                Name = contactModel.Name,
+                Email = contactModel.Email,
+                Phone = contactModel.Phone,
+                Service = contactModel.Service,
+                Message = contactModel.Message,
+                Status = "new",
+                CreatedDate = DateTime.UtcNow
+            };
+            
+            // Save to database
+            DbContext.Contacts.Add(contact);
+            await DbContext.SaveChangesAsync();
+            
+            showSuccessMessage = true;
+            
+            // Reset form
+            contactModel = new();
+            
+            // Hide success message after 5 seconds
+            await Task.Delay(5000);
+            showSuccessMessage = false;
+        }
+        catch (Exception)
+        {
+            // Error saving - could be enhanced with proper error handling
+            showSuccessMessage = false;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
     }
 
     public class ContactModel

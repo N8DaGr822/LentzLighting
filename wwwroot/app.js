@@ -129,4 +129,29 @@ if ('serviceWorker' in navigator) {
                 console.log('ServiceWorker registration failed: ', err);
             });
     });
-} 
+}
+
+// Dynamic script loading
+window.loadScript = function(src) {
+    console.log(`Loading script: ${src}`);
+    return new Promise((resolve, reject) => {
+        // Check if script is already loaded
+        if (document.querySelector(`script[src="${src}"]`)) {
+            console.log(`Script ${src} already loaded`);
+            resolve();
+            return;
+        }
+        
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => {
+            console.log(`Script ${src} loaded successfully`);
+            resolve();
+        };
+        script.onerror = (error) => {
+            console.error(`Failed to load script ${src}:`, error);
+            reject(error);
+        };
+        document.head.appendChild(script);
+    });
+}; 

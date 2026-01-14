@@ -375,4 +375,13 @@ jspm_packages/
 
 # Blazor specific
 *.blazor.js
-*.blazor.server.js 
+*.blazor.server.js
+
+# Sensitive configuration files
+appsettings.Development.json
+appsettings.Production.json
+
+# Database files
+*.db
+*.db-shm
+*.db-wal 

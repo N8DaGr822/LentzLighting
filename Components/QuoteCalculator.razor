@@ -1,6 +1,9 @@
 @rendermode InteractiveServer
+@using LentzLighting.Data
+@using LentzLighting.Models
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject ApplicationDbContext DbContext
 
 <div class="quote-calculator">
     <div class="calculator-header">
@@ -166,23 +169,37 @@
     private void SetBasicPackage() => quote.Package = "basic";
     private void SetCustomPackage() => quote.Package = "custom";
 
-    private bool shouldNavigateToContact = false;
 
-    private void RequestQuote()
+    private async Task RequestQuote()
     {
-        // Set flag to navigate after render
-        shouldNavigateToContact = true;
-        StateHasChanged();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (shouldNavigateToContact)
+        try
         {
-            shouldNavigateToContact = false;
-            // Store quote details in localStorage
-            await JS.InvokeVoidAsync("localStorage.setItem", "quoteDetails", 
-                System.Text.Json.JsonSerializer.Serialize(quote));
+            // Create quote entity
+            var quoteEntity = new Quote
+            {
+                PropertyType = quote.PropertyType,
+                Package = quote.Package,
+                Roofline = quote.Roofline,
+                Trees = quote.Trees,
+                Bushes = quote.Bushes,
+                Pathway = quote.Pathway,
+                Animation = quote.Animation,
+                SquareFootage = quote.SquareFootage,
+                TotalPrice = CalculateTotal(),
+                Status = "pending",
+                CreatedDate = DateTime.UtcNow
+            };
+            
+            // Save to database
+            DbContext.Quotes.Add(quoteEntity);
+            await DbContext.SaveChangesAsync();
+            
+            // Navigate to contact page
+            Navigation.NavigateTo("/contact");
+        }
+        catch (Exception)
+        {
+            // Error saving - navigate anyway
             Navigation.NavigateTo("/contact");
         }
     }
